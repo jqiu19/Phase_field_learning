@@ -1,3 +1,4 @@
+# This code is used to implement method 2 (algebraic-informed neural network) for learning the free energy. Minimize equation Loss directly.
 import sys
 
 sys.path.append('../')

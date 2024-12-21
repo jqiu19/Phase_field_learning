@@ -1,3 +1,4 @@
+# This code train a neural network to learn free energy derivative \phi (\phi**2 - 1), by using this function as a label directly.
 import sys
 
 sys.path.append('../')
