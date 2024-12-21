@@ -1,3 +1,4 @@
+# This code uses the well-trained model from free_energy_2nn.py to perform autodiff and FDM, and calculate the distance to ground_f
 import sys
 
 sys.path.append('../')
