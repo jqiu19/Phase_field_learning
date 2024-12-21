@@ -1,3 +1,4 @@
+# This code train a neural network to fit phi(t,x,y)
 import sys
 
 sys.path.append('../')
