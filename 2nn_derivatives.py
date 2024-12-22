@@ -1,4 +1,3 @@
-# This code uses the well-trained model from free_energy_2nn.py to perform autodiff and FDM, and calculate the distance to ground_f
 import sys
 
 sys.path.append('../')
@@ -52,9 +51,6 @@ parser.add_argument("--device", type=int, default=6, help="cuda number")
 
 args = parser.parse_args()
 
-def net(model, x, frozen_para):
-    return model(jnp.stack(x), frozen_para)
-
 # Load data
 mat_data = scipy.io.loadmat('/home/qjw/code/python_code/phase_field/FullData_ACequ_2D.mat')
 phiN = mat_data['phiN'].flatten(order = 'F')
@@ -87,11 +83,17 @@ model_path = "modifiedmlp_0.eqx"
 normalizer = normalization(ob_txy, args.normalization)
 model_template = get_network(args, 3, 1, normalizer, keys)
 model = eqx.tree_deserialise_leaves(model_path, model_template)
-
-dt_phi = grad(model, 0)
-dxx_phi = grad(grad(model, 1), 1)
-dyy_phi = grad(grad(model, 2), 2)
+print(model)
 frozen_para = model.get_frozen_para()
+print(frozen_para)
+
+def net(model, t, x, y, frozen_para):
+    return model(jnp.stack([t, x, y]), frozen_para)[0]
+
+
+dt_phi = grad(net, 0)(model, t, x, y, frozen_para)
+dxx_phi = grad(grad(net, 1), 1)(model, t, x, y, frozen_para)
+dyy_phi = grad(grad(net, 2), 2)(model, t, x, y, frozen_para)
 
 # Compare approximation accuracy of derivatives by autodiff and FDM
 keys = random.split(keys[-1], 3)
@@ -100,9 +102,9 @@ eps = args.eps
 gamma = args.gamma
 test_set = random.choice(keys[0], ob_txy, shape=(N_test,), replace=False)
 # Autodiff
-dt_phi_val = vmap(net, (None, 0, None))(dt_phi, test_set[:, :3], frozen_para)
-dxx_phi_val = vmap(net, (None, 0, None))(dxx_phi, test_set[:, :3], frozen_para)
-dyy_phi_val = vmap(net, (None, 0, None))(dyy_phi, test_set[:, :3], frozen_para)
+dt_phi_val = vmap(dt_phi, (None, 0, None))(model, test_set[:, :3], frozen_para)
+dxx_phi_val = vmap(dxx_phi, (None, 0, None))(model, test_set[:, :3], frozen_para)
+dyy_phi_val = vmap(dyy_phi, (None, 0, None))(model, test_set[:, :3], frozen_para)
 print(f'length of dt_phi_val is {len(dt_phi_val)}')
 print(f'length of dxx_phi_val is {len(dxx_phi_val)}')
 print(f'length of dyy_phi_val is {len(dyy_phi_val)}')
