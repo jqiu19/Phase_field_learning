@@ -10,6 +10,8 @@ This repository contains code and plans for utilizing machine learning technique
 
 4、 尝试对神经网络进行符号回归。
 
+5、迁移matlab的谱方法代码。
+
 ## 12.30
 
 1. how to debug
